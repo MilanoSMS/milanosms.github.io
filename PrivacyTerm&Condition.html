@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms & Conditions</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 20px auto; padding: 0 20px; }
+        h1 { color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        h2 { color: #444; margin-top: 30px; }
+        .error { color: red; font-weight: bold; }
+        .content { display: none; }
+    </style>
+</head>
+<body>
+    <div class="error"></div>
+    <div class="content">        
+        <h1>Messaging Terms & Conditions</h1>
+        <p id="messagingTerms"></p>
+
+        <h1>Privacy Policy</h1>
+        <p id="privacyPolicy"></p>
+    </div>
+
+    <script>
+		function sanitizeInput(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+		
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function initializeContent() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const encodedData = urlParams.get('data');
+            
+            if (!encodedData) {
+                showError('Invalid URL parameters');
+                return;
+            }
+
+            try {
+                const decodedData = atob(encodedData);
+                const data = JSON.parse(decodedData);
+                
+                if (!data.company || !data.email) {
+                    showError('Missing required parameters');
+                    return;
+                }
+                
+                if (!validateEmail(data.email)) {
+                    showError('Invalid email format');
+                    return;
+                }
+				
+				const sanitizedCompany = sanitizeInput(data.company);
+                const sanitizedEmail = sanitizeInput(data.email);
+				
+                document.getElementById('messagingTerms').innerHTML= 
+                    `You agree to receive informational messages (appointment reminders, account notifications, etc.) from ${sanitizedCompany}. Message frequency varies. Message and data rates may apply. For help, reply HELP or email us at <a href="mailto:${sanitizedEmail}">${sanitizedEmail}</a>. You can opt out at any time by replying STOP.`;
+
+                document.getElementById('privacyPolicy').innerHTML = 
+                    `Mobile information will not be shared with third parties/affiliates for marketing/promotional purposes. All the above categories exclude text messaging originator opt-in data and consent; this information will not be shared with any third parties.`;
+
+                document.querySelector('.content').style.display = 'block';
+            } catch (error) {
+                showError('Invalid parameter format');
+            }
+        }
+
+        function showError(message) {
+            document.querySelector('.error').textContent = message;
+            document.querySelector('.content').style.display = 'none';
+        }
+
+        initializeContent();
+    </script>
+</body>
+</html>
